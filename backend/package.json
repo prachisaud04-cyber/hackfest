@@ -1,0 +1,28 @@
+{
+  "name": "hackfest-backend",
+  "version": "1.0.0",
+  "description": "Backend API for HackFest 2026 Event Registration System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "hackfest",
+    "registration",
+    "express",
+    "mongodb",
+    "mongoose"
+  ],
+  "author": "HackFest Team",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
