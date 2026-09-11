@@ -1,4 +1,4 @@
-# ⚡ HackFest 2026 — Premier National Level 36-Hour Hackathon Platform
+# ⚡ HackFest 2026 — Premier National Level 24-Hour Hackathon Platform
 
 ![HackFest 2026 Banner](https://img.shields.io/badge/HackFest-2026-00f0ff?style=for-the-badge&logo=codeforces&logoColor=black)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)
