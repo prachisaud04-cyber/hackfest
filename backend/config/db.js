@@ -10,10 +10,12 @@ if (!cached) {
 }
 
 async function connectDB() {
-  const mongoURI = process.env.MONGODB_URI ? process.env.MONGODB_URI.trim() : '';
+  let mongoURI = (process.env.MONGODB_URI || '').trim();
+  // Strip any accidental wrapping quotes entered in Vercel UI
+  mongoURI = mongoURI.replace(/^["']|["']$/g, '').trim();
 
   if (!mongoURI) {
-    const errorMsg = 'MONGODB_URI is not set in environment variables.';
+    const errorMsg = 'MONGODB_URI is not defined in environment variables.';
     console.error(`❌ [MongoDB] ${errorMsg}`);
     throw new Error(errorMsg);
   }
@@ -25,14 +27,15 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 8000,
-      connectTimeoutMS: 8000,
-      socketTimeoutMS: 20000,
+      serverSelectionTimeoutMS: 6000,
+      connectTimeoutMS: 6000,
+      socketTimeoutMS: 45000,
+      maxPoolSize: 10,
     };
 
-    console.log('🔄 [MongoDB] Establishing connection to MongoDB Atlas...');
+    console.log('🔄 [MongoDB] Initiating connection to MongoDB Atlas...');
     cached.promise = mongoose.connect(mongoURI, opts).then((mongooseInstance) => {
-      console.log('✅ [MongoDB] Successfully connected to MongoDB Atlas');
+      console.log('✅ [MongoDB] Connected successfully to Atlas');
       return mongooseInstance;
     }).catch((err) => {
       cached.promise = null;
