@@ -6,6 +6,7 @@ import { Footer } from '@/components/footer'
 import { AnimatedNetwork } from '@/components/animated-network'
 import { ToastProvider } from '@/components/toast'
 import { ScrollToTop } from '@/components/scroll-to-top'
+import { CommandPalette } from '@/components/command-palette'
 import './globals.css'
 
 const spaceGrotesk = Space_Grotesk({
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
     default: 'HackFest 2026 — Build. Break. Innovate.',
   },
   description:
-    'A 2-day hybrid hackathon for students, developers, designers, and innovators at Information Technology department, Gauhati University. 13–14 September 2026.',
+    'A premier 36-hour hybrid hackathon for developers, creators, and innovators at Information Technology department, Gauhati University. 16–17 October 2026.',
   keywords: [
     'hackathon',
     'HackFest 2026',
@@ -43,6 +44,7 @@ export const metadata: Metadata = {
     'hybrid hackathon',
     'AI hackathon',
     'coding competition',
+    'national hackathon',
   ],
   generator: 'v0.app',
 }
@@ -73,6 +75,7 @@ export default function RootLayout({
             <Footer />
           </div>
           <ScrollToTop />
+          <CommandPalette />
         </ToastProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

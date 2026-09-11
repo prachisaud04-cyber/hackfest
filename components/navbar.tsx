@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ArrowRight, Menu, X, Sparkles } from 'lucide-react'
+import { ArrowRight, Menu, X, Search } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 
 const navLinks = [
@@ -46,6 +46,10 @@ export function Navbar() {
     return null
   }
 
+  const triggerSearch = () => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))
+  }
+
   return (
     <header className={`navbar-header ${scrolled ? 'navbar-scrolled' : ''}`}>
       <div className="navbar-container">
@@ -73,6 +77,19 @@ export function Navbar() {
         </nav>
 
         <div className="navbar-actions">
+          {/* Quick Search Button */}
+          <button
+            type="button"
+            onClick={triggerSearch}
+            className="navbar-search-btn"
+            title="Search site (Ctrl+K)"
+            aria-label="Open Command Search"
+          >
+            <Search size={14} className="accent-cyan" />
+            <span className="navbar-search-lbl">Search...</span>
+            <kbd className="navbar-search-kbd">Ctrl K</kbd>
+          </button>
+
           <Link href="/register" className="button button-register">
             <span>REGISTER NOW</span>
             <ArrowRight size={15} />
@@ -98,35 +115,45 @@ export function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="mobile-nav-drawer"
+            className="mobile-drawer"
           >
-            <nav className="mobile-nav-list">
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`mobile-nav-item ${isActive ? 'mobile-nav-item-active' : ''}`}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <span>{link.label}</span>
-                    {isActive && <span className="mobile-active-tag">Active</span>}
-                  </Link>
-                )
-              })}
-              <div className="mobile-drawer-cta">
-                <Link
-                  href="/register"
-                  className="button button-register button-full"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Sparkles size={16} />
+            <div className="mobile-nav-inner">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false)
+                  setTimeout(triggerSearch, 100)
+                }}
+                className="mobile-search-trigger-btn"
+              >
+                <Search size={16} className="accent-cyan" />
+                <span>Search pages, tracks, rules...</span>
+                <kbd>Ctrl K</kbd>
+              </button>
+
+              <nav className="mobile-nav-links" aria-label="Mobile Navigation">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`mobile-nav-item ${isActive ? 'mobile-nav-item-active' : ''}`}
+                    >
+                      <span>{link.label}</span>
+                      {isActive && <span className="active-dot" />}
+                    </Link>
+                  )
+                })}
+              </nav>
+
+              <div className="mobile-drawer-footer">
+                <Link href="/register" className="button button-primary w-full justify-center">
                   <span>REGISTER NOW</span>
                   <ArrowRight size={16} />
                 </Link>
               </div>
-            </nav>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

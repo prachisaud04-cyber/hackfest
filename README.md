@@ -26,9 +26,11 @@ Featuring an electric dark navy & cyan cyberpunk aesthetic, animated particle ne
 - **Register (`/register`)**: 
   - Dynamic multi-step registration form with client-side & server-side validation.
   - Verification with custom `checked.gif` success animation.
-  - **Hacker Pass Generation**: Dynamic digital ticket with registration ID, team details, QR/barcode, and quick download/print.
+  - **Hacker Pass Generation**: Dynamic digital ticket with registration ID, team details, QR/barcode, and **1-Click PNG Ticket Image Generator**.
   - **3D Holographic Hacker Badge**: Interactive rotating 3D badge modal with holographic sheen.
+  - **1-Click Team Sharing & Invites**: Native `navigator.share` / clipboard invite links for teammates.
 - **Status Checker (`/status`)**: Real-time status lookup by email address (with auto-fill query param support: `?email=...`).
+- **Command Palette (`Ctrl+K` / `⌘K`)**: Fast cyberpunk search modal to jump to any page, challenge track, mentor, rule, or schedule item instantly.
 - **FAQ (`/faq`)**: Categorized accordion with live search and quick answers.
 - **Contact (`/contact`)**: Help desk inquiries, emergency contacts, venue directions, and interactive form.
 - **Organizer Dashboard (`/organizer`)**: 
@@ -41,6 +43,10 @@ Featuring an electric dark navy & cyan cyberpunk aesthetic, animated particle ne
 - **Database Persistence**: Powered by MongoDB Atlas via Mongoose schemas.
 - **Sequential Registration IDs**: Automatically generated in sequence (`HF26-00001`, `HF26-00002`, ...).
 - **Duplicate Prevention**: Rejects duplicate email submissions with clean HTTP 409 Conflict responses.
+- **Automated Notifications**:
+  - **Email Confirmation (Nodemailer)**: Sends formatted HTML event pass to participant email.
+  - **Discord Webhook**: Sends real-time embed alert to organizer Discord channels when teams register.
+  - **Slack Webhook**: Sends formatted Slack team notification for incoming registrations.
 - **CORS Configured**: Secure cross-origin resource sharing between Next.js frontend and Express API.
 - **RESTful Endpoints**: Clean JSON APIs for registration, status lookup, and organizer querying.
 
@@ -62,30 +68,36 @@ hackfest/
 │   ├── schedule/page.tsx         # Schedule & Calendar Export (.ics)
 │   ├── status/page.tsx           # Live Registration Status Checker
 │   ├── tracks/page.tsx           # Challenge Tracks
-│   ├── layout.tsx                # Root layout with Toast & Scroll-to-Top
+│   ├── layout.tsx                # Root layout with Toast, CommandPalette & Scroll-to-Top
 │   ├── globals.css               # Global Tailwind CSS styles & animations
 │   └── page.tsx                  # Landing / Home Page
 ├── backend/                      # Standalone Node.js + Express API
+│   ├── config/
+│   │   └── db.js                 # Serverless MongoDB Atlas connection manager
 │   ├── controllers/
 │   │   └── registrationController.js  # Business logic & MongoDB operations
 │   ├── models/
 │   │   └── Registration.js            # Mongoose Registration Schema
 │   ├── routes/
 │   │   └── registrationRoutes.js      # Express API route declarations
+│   ├── services/
+│   │   └── notificationService.js     # Email (Nodemailer), Discord & Slack webhooks
 │   ├── .env.example              # Sample backend environment configuration
 │   ├── .gitignore                # Protects secrets from version control
 │   ├── package.json              # Backend dependencies
-│   └── server.js                 # Express server & MongoDB connection
+│   ├── vercel.json               # Serverless Express routing configuration
+│   └── server.js                 # Express server & CORS setup
 ├── components/                   # Reusable UI & Feature Components
 │   ├── animated-network.tsx      # Cyberpunk canvas particle network
+│   ├── command-palette.tsx       # Global Cyberpunk Search / Command Palette (Ctrl+K)
 │   ├── footer.tsx                # Global footer with quick links
 │   ├── hacker-badge-modal.tsx    # 3D interactive holographic badge modal
-│   ├── hacker-ticket-card.tsx    # Digital Hacker Pass ticket component
-│   ├── navbar.tsx                # Responsive navigation bar with active route indicators
+│   ├── hacker-ticket-card.tsx    # Digital Hacker Pass ticket with PNG export & team sharing
+│   ├── navbar.tsx                # Responsive navbar with search trigger & active route indicators
 │   ├── page-transition.tsx       # Smooth page mount transitions
 │   ├── scroll-to-top.tsx         # Floating scroll-to-top button
 │   ├── section-heading.tsx       # Uniform section headers
-│   ├── toast.tsx                 # Toast notification provider
+│   ├── toast.tsx                 # Toast notification provider with error support
 │   └── ui/                       # UI primitives (buttons, inputs, cards, dialogs)
 ├── lib/
 │   ├── api.ts                    # Typed API client with live backend connection

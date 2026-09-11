@@ -1,5 +1,6 @@
 const Registration = require('../models/Registration');
 const connectDB = require('../config/db');
+const { notifyAll } = require('../services/notificationService');
 
 /**
  * Helper function to generate sequential, unique Registration IDs:
@@ -119,6 +120,9 @@ exports.createRegistration = async (req, res) => {
 
     const savedRegistration = await newRegistration.save();
     console.log(`✅ [Registration] Created successfully: ${savedRegistration.registrationId} for ${cleanEmail}`);
+
+    // Asynchronously dispatch notifications (Email, Discord, Slack)
+    notifyAll(savedRegistration);
 
     // 8. Return 201 Created response
     return res.status(201).json({
