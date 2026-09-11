@@ -15,4 +15,5 @@ backend/.env
 # Common ignores
 node_modules
 .next/
+*.tsbuildinfo
 .DS_Store
