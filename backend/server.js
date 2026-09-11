@@ -1,7 +1,7 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const connectDB = require('./config/db');
 const registrationRoutes = require('./routes/registrationRoutes');
 
 // Load environment variables from .env file
@@ -16,19 +16,37 @@ const allowedOrigins = [
   'http://127.0.0.1:3000',
 ];
 
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL.trim());
+}
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, Postman) or matching allowed origins
-      if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
-        callback(null, true);
-      } else {
-        callback(null, true); // Permissive in dev mode for smooth onboarding
+      // Allow requests with no origin (like mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+
+      // Match localhost or any *.vercel.app domain
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:') ||
+        /^https:\/\/.*\.vercel\.app$/.test(origin)
+      ) {
+        return callback(null, true);
       }
+
+      // Allow in dev / staging environments
+      return callback(null, true);
     },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     credentials: true,
   })
 );
+
+// Pre-flight OPTIONS handling
+app.options('*', cors());
 
 // Body Parsing Middleware
 app.use(express.json());
@@ -49,7 +67,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes
+// Mount API Routes
 app.use('/api', registrationRoutes);
 
 // Catch-all 404 handler for unknown routes
@@ -62,42 +80,32 @@ app.use((req, res) => {
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled Server Error:', err.message);
+  console.error('❌ Unhandled Server Error:', err.message);
   res.status(500).json({
     success: false,
     message: 'An unexpected server error occurred.',
   });
 });
 
-// Connect to MongoDB Atlas and Start Server
+// Connect to DB and Start HTTP Listener (Standalone / Local Mode)
 async function startServer() {
-  const mongoURI = process.env.MONGODB_URI ? process.env.MONGODB_URI.trim() : '';
-
-  if (!mongoURI) {
-    console.log('---------------------------------------------------------');
-    console.log('⚠️  [MongoDB] MONGODB_URI is not set in backend/.env');
-    console.log('   Please paste your MongoDB Atlas connection string into:');
-    console.log('   backend/.env');
-    console.log('   Example: MONGODB_URI=mongodb+srv://user:pass@cluster0.../hackfest');
-    console.log('---------------------------------------------------------');
-  } else {
-    try {
-      await mongoose.connect(mongoURI);
-      console.log('---------------------------------------------------------');
-      console.log('✅ MongoDB connected successfully');
-      console.log('---------------------------------------------------------');
-    } catch (error) {
-      console.error('---------------------------------------------------------');
-      console.error('❌ MongoDB connection error:', error.message);
-      console.error('   Please verify your IP whitelist, username, and password in Atlas.');
-      console.error('---------------------------------------------------------');
+  try {
+    if (process.env.MONGODB_URI) {
+      await connectDB();
+    } else {
+      console.warn('⚠️ [MongoDB] MONGODB_URI is not set in environment variables.');
     }
+  } catch (err) {
+    console.error('⚠️ [MongoDB] Initial connection error:', err.message);
   }
 
-  app.listen(PORT, () => {
-    console.log(`🚀 HackFest 2026 Server running on http://localhost:${PORT}`);
-    console.log(`📡 Health check available at: http://localhost:${PORT}/api/health`);
-  });
+  // Only start listener if not required by another module (like Vercel serverless)
+  if (require.main === module || process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+      console.log(`🚀 HackFest 2026 Server running on http://localhost:${PORT}`);
+      console.log(`📡 Health check available at: http://localhost:${PORT}/api/health`);
+    });
+  }
 }
 
 startServer();

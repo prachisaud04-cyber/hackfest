@@ -8,11 +8,11 @@ interface ToastMessage {
   id: string
   title: string
   description?: string
-  type?: 'success' | 'info' | 'warning'
+  type?: 'success' | 'info' | 'warning' | 'error'
 }
 
 interface ToastContextType {
-  showToast: (title: string, description?: string, type?: 'success' | 'info' | 'warning') => void
+  showToast: (title: string, description?: string, type?: 'success' | 'info' | 'warning' | 'error') => void
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined)
@@ -21,13 +21,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([])
 
   const showToast = useCallback(
-    (title: string, description?: string, type: 'success' | 'info' | 'warning' = 'success') => {
+    (title: string, description?: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
       const id = Math.random().toString(36).substring(2, 9)
       setToasts((prev) => [...prev, { id, title, description, type }])
 
       setTimeout(() => {
         setToasts((prev) => prev.filter((t) => t.id !== id))
-      }, 3000)
+      }, 4000)
     },
     []
   )
@@ -53,6 +53,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               <div className="toast-icon">
                 {toast.type === 'info' && <Info size={18} />}
                 {toast.type === 'warning' && <AlertTriangle size={18} />}
+                {toast.type === 'error' && <AlertTriangle size={18} className="text-red-400" />}
                 {(!toast.type || toast.type === 'success') && <CheckCircle2 size={18} />}
               </div>
               <div className="toast-text-content">

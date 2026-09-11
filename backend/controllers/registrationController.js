@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
 const Registration = require('../models/Registration');
+const connectDB = require('../config/db');
 
 /**
  * Helper function to generate sequential, unique Registration IDs:
@@ -7,7 +7,6 @@ const Registration = require('../models/Registration');
  */
 async function generateNextRegistrationId() {
   try {
-    // Find the latest registration document sorted by creation date or registration ID
     const lastRegistration = await Registration.findOne(
       { registrationId: { $regex: /^HF26-\d{5}$/ } },
       { registrationId: 1 }
@@ -17,7 +16,6 @@ async function generateNextRegistrationId() {
       return 'HF26-00001';
     }
 
-    // Extract the numeric portion
     const currentNumberStr = lastRegistration.registrationId.replace('HF26-', '');
     const currentNumber = parseInt(currentNumberStr, 10);
 
@@ -28,16 +26,9 @@ async function generateNextRegistrationId() {
     const nextNumber = currentNumber + 1;
     return `HF26-${String(nextNumber).padStart(5, '0')}`;
   } catch (error) {
-    // Fallback in case of database lookup hiccup
+    console.warn('[Registration ID] Fallback ID generated due to:', error.message);
     return `HF26-${String(Math.floor(10000 + Math.random() * 90000))}`;
   }
-}
-
-/**
- * Helper to check MongoDB connection status before executing queries
- */
-function isDbConnected() {
-  return mongoose.connection.readyState === 1;
 }
 
 /**
@@ -47,6 +38,17 @@ function isDbConnected() {
  */
 exports.createRegistration = async (req, res) => {
   try {
+    // 1. Ensure database is connected
+    try {
+      await connectDB();
+    } catch (dbErr) {
+      console.error('[Registration] Database connection failed:', dbErr.message);
+      return res.status(503).json({
+        success: false,
+        message: 'Database is currently unreachable. Please try again shortly.',
+      });
+    }
+
     const {
       fullName,
       email,
@@ -58,7 +60,7 @@ exports.createRegistration = async (req, res) => {
       track,
     } = req.body;
 
-    // 1. Validate required fields presence
+    // 2. Validate required fields presence
     if (!fullName || !email || !phone || !college || !teamName || !teamSize || !role || !track) {
       return res.status(400).json({
         success: false,
@@ -66,8 +68,8 @@ exports.createRegistration = async (req, res) => {
       });
     }
 
-    // 2. Validate email format
-    const cleanEmail = email.trim().toLowerCase();
+    // 3. Validate email format
+    const cleanEmail = String(email).trim().toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
       return res.status(400).json({
@@ -76,7 +78,7 @@ exports.createRegistration = async (req, res) => {
       });
     }
 
-    // 3. Validate team size (must be 2, 3, or 4)
+    // 4. Validate team size (must be 2, 3, or 4)
     const numericTeamSize = Number(teamSize);
     if (![2, 3, 4].includes(numericTeamSize)) {
       return res.status(400).json({
@@ -85,17 +87,12 @@ exports.createRegistration = async (req, res) => {
       });
     }
 
-    // 4. Verify MongoDB connection
-    if (!isDbConnected()) {
-      return res.status(503).json({
-        success: false,
-        message: 'Database is not connected. Please ensure MONGODB_URI is set in backend/.env',
-      });
-    }
+    console.log(`[Registration] Processing registration for email: ${cleanEmail}, team: ${teamName}`);
 
     // 5. Check for duplicate email registration (409 Conflict)
     const existingRegistration = await Registration.findOne({ email: cleanEmail });
     if (existingRegistration) {
+      console.log(`[Registration] Duplicate email blocked: ${cleanEmail} (ID: ${existingRegistration.registrationId})`);
       return res.status(409).json({
         success: false,
         message: 'This email address is already registered for HackFest 2026.',
@@ -108,19 +105,20 @@ exports.createRegistration = async (req, res) => {
 
     // 7. Create and persist document
     const newRegistration = new Registration({
-      fullName: fullName.trim(),
+      fullName: String(fullName).trim(),
       email: cleanEmail,
-      phone: phone.trim(),
-      college: college.trim(),
-      teamName: teamName.trim(),
+      phone: String(phone).trim(),
+      college: String(college).trim(),
+      teamName: String(teamName).trim(),
       teamSize: numericTeamSize,
-      role: role.trim(),
-      track: track.trim(),
+      role: String(role).trim(),
+      track: String(track).trim(),
       registrationId,
       status: 'registered',
     });
 
     const savedRegistration = await newRegistration.save();
+    console.log(`✅ [Registration] Created successfully: ${savedRegistration.registrationId} for ${cleanEmail}`);
 
     // 8. Return 201 Created response
     return res.status(201).json({
@@ -143,9 +141,10 @@ exports.createRegistration = async (req, res) => {
   } catch (error) {
     // Handle Mongoose duplicate key error (code 11000)
     if (error.code === 11000) {
+      console.warn('[Registration] Duplicate key error 11000 caught');
       return res.status(409).json({
         success: false,
-        message: 'Duplicate key error: Email or Registration ID already exists in the system.',
+        message: 'Duplicate record: This email or Registration ID is already registered.',
       });
     }
 
@@ -158,10 +157,10 @@ exports.createRegistration = async (req, res) => {
       });
     }
 
-    console.error('Registration error:', error.message);
+    console.error('❌ [Registration] Unexpected error:', error.message);
     return res.status(500).json({
       success: false,
-      message: 'An internal server error occurred while processing registration.',
+      message: 'An unexpected server error occurred while processing registration.',
     });
   }
 };
@@ -183,10 +182,13 @@ exports.getRegistrationByEmail = async (req, res) => {
 
     const cleanEmail = rawEmail.trim().toLowerCase();
 
-    if (!isDbConnected()) {
+    try {
+      await connectDB();
+    } catch (dbErr) {
+      console.error('[Lookup] Database connection failed:', dbErr.message);
       return res.status(503).json({
         success: false,
-        message: 'Database is not connected. Please ensure MONGODB_URI is set in backend/.env',
+        message: 'Database is currently unreachable.',
       });
     }
 
@@ -216,7 +218,7 @@ exports.getRegistrationByEmail = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Get registration error:', error.message);
+    console.error('❌ [Lookup] Error:', error.message);
     return res.status(500).json({
       success: false,
       message: 'An internal server error occurred while retrieving registration.',
@@ -231,10 +233,13 @@ exports.getRegistrationByEmail = async (req, res) => {
  */
 exports.getAllRegistrations = async (req, res) => {
   try {
-    if (!isDbConnected()) {
+    try {
+      await connectDB();
+    } catch (dbErr) {
+      console.error('[Admin] Database connection failed:', dbErr.message);
       return res.status(503).json({
         success: false,
-        message: 'Database is not connected. Please ensure MONGODB_URI is set in backend/.env',
+        message: 'Database is currently unreachable.',
       });
     }
 
@@ -248,7 +253,7 @@ exports.getAllRegistrations = async (req, res) => {
       registrations,
     });
   } catch (error) {
-    console.error('Get all registrations error:', error.message);
+    console.error('❌ [Admin] Error:', error.message);
     return res.status(500).json({
       success: false,
       message: 'An internal server error occurred while retrieving registrations.',
@@ -267,17 +272,15 @@ exports.getEventInfo = (req, res) => {
     event: {
       name: 'HackFest 2026',
       tagline: 'Build. Break. Innovate.',
-      date: '13–14 September 2026',
+      date: '16–17 October 2026',
       location: 'Information Technology department, Gauhati University',
       mode: 'Hybrid',
       teamSize: '2–4',
       entryFee: 'Free',
       tracks: [
-        'AI & Machine Learning',
-        'Web & App Development',
-        'Cybersecurity',
-        'HealthTech',
-        'Sustainability',
+        'AI & Intelligent Systems',
+        'Web3 & Decentralized Tech',
+        'ClimateTech & Smart Cities',
         'Open Innovation',
       ],
     },

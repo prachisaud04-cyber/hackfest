@@ -3,7 +3,7 @@
  * Connects the Next.js frontend to the Express + MongoDB Atlas backend.
  */
 
-const DEFAULT_BACKEND_URL = 'https://backend-4mj7yx965-prachisaud04-cybers-projects.vercel.app'
+const DEFAULT_BACKEND_URL = 'https://backend-gamma-indol-14.vercel.app'
 
 function getApiBaseUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_API_URL || DEFAULT_BACKEND_URL

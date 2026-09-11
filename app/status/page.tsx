@@ -111,7 +111,7 @@ function StatusCheckerContent() {
           track: live.track,
           registrationId: live.registrationId,
           status: 'Confirmed & Active',
-          date: '13–14 September 2026',
+          date: '16–17 October 2026',
           venue: 'Information Technology department, Gauhati University · Hybrid',
           college: live.college,
         }
@@ -153,7 +153,7 @@ function StatusCheckerContent() {
           track: matched.track || 'AI & Machine Learning',
           registrationId: matched.registrationId || 'HF26-00127',
           status: 'Confirmed & Active',
-          date: '13–14 September 2026',
+          date: '16–17 October 2026',
           venue: 'Information Technology department, Gauhati University · Hybrid',
           college: matched.college || 'Gauhati University',
         }

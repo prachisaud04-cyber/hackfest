@@ -158,7 +158,7 @@ function RegisterFormContent() {
         const newRegistration: RegistrationData = {
           ...form,
           registrationId: res.registration.registrationId,
-          date: '13–14 September 2026',
+          date: '16–17 October 2026',
         }
 
         // Cache in localStorage for instant offline access
@@ -177,39 +177,22 @@ function RegisterFormContent() {
           'success'
         )
       } else {
-        throw new Error(res.message || 'Registration failed')
+        throw new Error(res.message || 'Registration failed. Please try again.')
       }
     } catch (err: any) {
-      console.warn('Backend registration notice:', err.message)
+      console.error('[Registration Error]', err)
 
       // Handle duplicate email conflict (409)
-      if (err.status === 409 || err.message?.includes('already registered')) {
-        setErrors({ email: 'This email is already registered. Please check status below.' })
-        showToast('Already Registered', 'This email is already registered. You can check your status.', 'warning')
-        setIsSubmitting(false)
+      if (err.status === 409 || err.message?.includes('already registered') || err.message?.includes('Duplicate')) {
+        setErrors({ email: 'This email is already registered. Please check your registration status.' })
+        showToast('Already Registered', 'This email is already registered for HackFest 2026.', 'warning')
         return
       }
 
-      // If backend is offline during demo, provide seamless client fallback
-      const generatedId = `HF26-${Math.floor(10000 + Math.random() * 90000)}`
-      const fallbackRegistration: RegistrationData = {
-        ...form,
-        registrationId: generatedId,
-        date: '13–14 September 2026',
-      }
-
-      try {
-        const existing = JSON.parse(localStorage.getItem('hackfest_demo_registrations') || '[]')
-        existing.push(fallbackRegistration)
-        localStorage.setItem('hackfest_demo_registrations', JSON.stringify(existing))
-      } catch (cacheErr) {}
-
-      setRegisteredData(fallbackRegistration)
-      showToast(
-        'Registration Saved',
-        `Registered as ${fallbackRegistration.name}. ID: ${generatedId}`,
-        'success'
-      )
+      // Handle validation or server errors
+      const errorMessage = err.message || 'Could not complete registration. Please check your connection.'
+      showToast('Registration Failed', errorMessage, 'error')
+      setErrors({ terms: errorMessage })
     } finally {
       setIsSubmitting(false)
     }
