@@ -3,7 +3,15 @@
  * Connects the Next.js frontend to the Express + MongoDB Atlas backend.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+const DEFAULT_BACKEND_URL = 'https://backend-4mj7yx965-prachisaud04-cybers-projects.vercel.app'
+
+function getApiBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || DEFAULT_BACKEND_URL
+  const cleaned = envUrl.trim().replace(/\/+$/, '')
+  return cleaned.endsWith('/api') ? cleaned : `${cleaned}/api`
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 interface ApiResponse<T = any> {
   success: boolean
@@ -39,7 +47,9 @@ async function request<T = any>(path: string, init?: RequestInit): Promise<ApiRe
   } catch (error: any) {
     if (error.status) throw error
     // Network or offline error
-    const netErr: any = new Error('Could not connect to backend server. Make sure it is running on port 5000.')
+    const netErr: any = new Error(
+      'Could not connect to the backend server. Please check your network connection or backend server status.'
+    )
     netErr.status = 0
     throw netErr
   }

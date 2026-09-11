@@ -150,12 +150,19 @@ hackfest/
    npm install
    ```
 
-3. Start the Next.js development server:
+3. (Optional) Configure environment variables:
+   - By default, the frontend connects to the deployed backend (`https://backend-4mj7yx965-prachisaud04-cybers-projects.vercel.app`).
+   - To connect to a local backend, create `.env.local` and set:
+     ```env
+     NEXT_PUBLIC_API_URL=http://localhost:5000/api
+     ```
+
+4. Start the Next.js development server:
    ```bash
    npm run dev
    ```
 
-4. Open your browser and navigate to:
+5. Open your browser and navigate to:
    ```text
    http://localhost:3000
    ```
@@ -164,7 +171,8 @@ hackfest/
 
 ## 📡 Backend API Reference
 
-Base URL: `http://localhost:5000/api`
+Base URL (Deployed): `https://backend-4mj7yx965-prachisaud04-cybers-projects.vercel.app/api`
+Base URL (Local Dev): `http://localhost:5000/api`
 
 | Method | Endpoint | Description | Request Body / Params |
 | :--- | :--- | :--- | :--- |
