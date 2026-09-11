@@ -1,0 +1,2 @@
+import Link from 'next/link'
+export default function StatusPage() { return <main className="subpage"><header className="subnav"><Link href="/" className="logo">HACKFEST <small>26</small></Link></header><section className="subpage-hero"><span className="eyebrow">08 / STATUS CHECKER</span><h1>Check your registration.</h1><p>Use the homepage status checker or wire this route to GET /api/registrations/:email through the REST API helper in lib/api.ts.</p><Link className="button" href="/#status">Check status <span>→</span></Link></section></main> }

@@ -1,0 +1,2 @@
+import Link from 'next/link'
+export default function RegisterPage() { return <main className="subpage"><header className="subnav"><Link href="/" className="logo">HACKFEST <small>26</small></Link></header><section className="subpage-hero"><span className="eyebrow">07 / YOUR TURN</span><h1>Build your entry.</h1><p>Registration is ready on the homepage demo. Connect the form to POST /api/registrations using NEXT_PUBLIC_API_URL when your Express backend is available.</p><Link className="button" href="/#register">Open registration <span>→</span></Link></section></main> }

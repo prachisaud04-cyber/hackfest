@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { AnimatedNetwork } from '@/components/animated-network'
 import {
   ArrowRight,
   BrainCircuit,
@@ -99,6 +100,7 @@ export default function Page() {
   const statusData = registered && statusEmail.toLowerCase() === registered.email.toLowerCase() ? registered : registered && status === 'found' ? registered : null
   const stats = useMemo(() => [['2 Days', 'Hackathon Duration'], ['2–4', 'Members / Team'], ['6', 'Challenge Tracks'], ['100+', 'Hackers']], [])
   return <main>
+    <AnimatedNetwork />
     <Navbar open={navOpen} setOpen={setNavOpen} />
     <section className="hero" id="home"><div className="hero-grid" /><div className="hero-copy"><span className="pill"><Zap size={14} /> 2-DAY HACKATHON · 16–17 OCT 2026</span><h1>BUILD.<br /><span>BREAK.</span><br />INNOVATE.</h1><p className="hero-title">HackFest <i>2026</i></p><p className="hero-subtitle">2 Days. One Idea. Endless Possibilities.</p><p className="hero-description">Bring your ideas to life, collaborate with fellow builders, and create solutions that matter in just two days.</p><div className="hero-actions"><Button /><Button variant="secondary" href="#about">Explore HackFest</Button></div></div><div className="hero-side"><div className="orbit-card"><span className="orbit-dot" /><span className="mono">IDEA → BUILD → DEMO</span><strong>Make it<br /><em>matter.</em></strong><small>GUWAHATI · HYBRID</small></div><Countdown /></div><div className="stats">{stats.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div></section>
     <section className="section about-section" id="about"><SectionHeading eyebrow="01 / ABOUT HACKFEST" title="Two Days. Infinite Possibilities." copy="HackFest is a collaborative two-day hackathon designed to bring together curious minds, developers, designers, and problem-solvers. Turn an idea into a working prototype and present it to a panel of judges." /><div className="about-layout"><div className="about-cards">{[['BUILD', 'Turn an idea into a working prototype.', Code2], ['COLLABORATE', 'Work with teammates, mentors, and fellow builders.', Users], ['INNOVATE', 'Create technology-driven solutions to meaningful problems.', Sparkles]].map(([title, copy, Icon]) => <div className="value-card" key={title as string}><Icon size={21} /><h3>{title as string}</h3><p>{copy as string}</p></div>)}</div><div className="flow-card"><span className="eyebrow">THE HACKFEST LOOP</span><div className="flow-line">{['IDEA', 'BUILD', 'TEST', 'DEMO'].map((item, i) => <div key={item}><span>0{i + 1}</span><strong>{item}</strong></div>)}</div><p>Start with a spark. Leave with something real.</p></div></div></section>
